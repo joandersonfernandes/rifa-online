@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rifa Formatura Joanderson - Cesta Fada do Dente</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 10px; max-width: 600px; margin: auto; }
+        .number { padding: 10px; border: 1px solid #000; cursor: pointer; background: #eee; }
+        .sold { background: red; color: white; cursor: not-allowed; }
+        .hidden { display: none; }
+    </style>
+    <!-- Carregar as bibliotecas do Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js"></script>
+    <script>
+        // Configuração do Firebase
+        const firebaseConfig = {
+            databaseURL: "https://rifafadadodente-default-rtdb.firebaseio.com/"
+        };
+
+        // Inicializar o Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        
+        let soldNumbers = []; // Números vendidos serão armazenados aqui
+        const numbersContainer = document.getElementById('numbers');
+        const paymentSection = document.getElementById('paymentSection');
+        const sendReceipt = document.getElementById('sendReceipt');
+        const pixKey = "89981386434";
+
+        // Função para carregar os números
+        function loadNumbers() {
+            db.ref('soldNumbers').once('value', snapshot => {
+                soldNumbers = snapshot.val() || []; // Recupera os números vendidos
+                numbersContainer.innerHTML = ''; // Limpa a área antes de adicionar novos números
+                // Cria 150 números na grade
+                for (let i = 1; i <= 150; i++) {
+                    let btn = document.createElement('div');
+                    btn.textContent = i; // Define o número
+                    btn.classList.add('number'); // Adiciona classe de estilo
+                    if (soldNumbers.includes(i)) {
+                        btn.classList.add('sold'); // Marca o número como vendido
+                    } else {
+                        btn.onclick = () => selectNumber(i); // Define ação de seleção
+                    }
+                    numbersContainer.appendChild(btn); // Adiciona o botão à grade
+                }
+            });
+        }
+
+        // Função de seleção de número
+        function selectNumber(num) {
+            if (soldNumbers.includes(num)) {
+                alert("Esse número já foi comprado!");
+                return;
+            }
+            alert(`Você escolheu o número ${num}. Agora faça o pagamento via Pix e envie o comprovante.`);
+            sendReceipt.href = `https://wa.me/5586999853656?text=Comprovante+do+Pix+para+o+número+${num}`;
+            paymentSection.classList.remove('hidden');
+            soldNumbers.push(num); // Adiciona o número à lista de vendidos
+            db.ref('soldNumbers').set(soldNumbers); // Atualiza o Firebase
+            loadNumbers(); // Atualiza a visualização dos números
+        }
+
+        // Função para copiar a chave Pix
+        function copyPixKey() {
+            navigator.clipboard.writeText(pixKey);
+            alert("Chave Pix copiada!");
+        }
+
+        // Carregar os números ao carregar a página
+        loadNumbers();
+    </script>
+</head>
+<body>
+    <h1>Rifa Formatura Joanderson - Cesta Fada do Dente</h1>
+    <p>Escolha um número e envie o pagamento via Pix.</p>
+    <div class="grid" id="numbers"></div>
+    
+    <div id="paymentSection" class="hidden">
+        <h2>Pagamento via Pix</h2>
+        <p>Chave Pix: <strong>89981386434</strong></p>
+        <button onclick="copyPixKey()">Copiar Chave Pix</button>
+        <p>Após o pagamento, envie o comprovante:</p>
+        <a id="sendReceipt" href="#" target="_blank">Enviar Comprovante</a>
+    </div>
+</body>
+</html>
