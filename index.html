@@ -1,0 +1,99 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2575.4">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="pt-BR"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;title&gt;Rifa Formatura Joanderson - Cesta Fada do Dente&lt;/title&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>body { font-family: Arial, sans-serif; text-align: center; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 10px; max-width: 600px; margin: auto; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.number { padding: 10px; border: 1px solid #000; cursor: pointer; background: #eee; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.sold { background: red; color: white; cursor: not-allowed; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.hidden { display: none; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"&gt;&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js"&gt;&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const firebaseConfig = {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>databaseURL: "https://rifafadadodente-default-rtdb.firebaseio.com/"</p>
+<p class="p1"><span class="Apple-converted-space">        </span>};</p>
+<p class="p1"><span class="Apple-converted-space">        </span>firebase.initializeApp(firebaseConfig);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const db = firebase.database();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;h1&gt;Rifa Formatura Joanderson - Cesta Fada do Dente&lt;/h1&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;p&gt;Escolha um número e envie o pagamento via Pix.&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="grid" id="numbers"&gt;&lt;/div&gt;</p>
+<p class="p2"><span class="Apple-converted-space">    </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div id="paymentSection" class="hidden"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;h2&gt;Pagamento via Pix&lt;/h2&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;p&gt;Chave Pix: &lt;strong&gt;89981386434&lt;/strong&gt;&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;button onclick="copyPixKey()"&gt;Copiar Chave Pix&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;p&gt;Após o pagamento, envie o comprovante:&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;a id="sendReceipt" href="#" target="_blank"&gt;Enviar Comprovante&lt;/a&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let soldNumbers = [];</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const numbersContainer = document.getElementById('numbers');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const paymentSection = document.getElementById('paymentSection');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const sendReceipt = document.getElementById('sendReceipt');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const pixKey = "89981386434";</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function loadNumbers() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>db.ref('soldNumbers').once('value', snapshot =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>soldNumbers = snapshot.val() || [];</p>
+<p class="p1"><span class="Apple-converted-space">                </span>numbersContainer.innerHTML = '';</p>
+<p class="p1"><span class="Apple-converted-space">                </span>for (let i = 1; i &lt;= 150; i++) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>let btn = document.createElement('div');</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>btn.textContent = i;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>btn.classList.add('number');</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>if (soldNumbers.includes(i)) {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>btn.classList.add('sold');</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>btn.onclick = () =&gt; selectNumber(i);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>numbersContainer.appendChild(btn);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>});</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function selectNumber(num) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (soldNumbers.includes(num)) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>alert("Esse número já foi comprado!");</p>
+<p class="p1"><span class="Apple-converted-space">                </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>alert(`Você escolheu o número ${num}. Agora faça o pagamento via Pix e envie o comprovante.`);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>sendReceipt.href = `https://wa.me/5586999853656?text=Comprovante+do+Pix+para+o+número+${num}`;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>paymentSection.classList.remove('hidden');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>soldNumbers.push(num);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>db.ref('soldNumbers').set(soldNumbers);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>loadNumbers();</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function copyPixKey() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>navigator.clipboard.writeText(pixKey);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>alert("Chave Pix copiada!");</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>loadNumbers();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
