@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rifa Formatura Joanderson - Cesta Fada do Dente</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 10px; max-width: 600px; margin: auto; }
+        .number { padding: 10px; border: 1px solid #000; cursor: pointer; background: #eee; }
+        .sold { background: red; color: white; cursor: not-allowed; }
+        .hidden { display: none; }
+    </style>
+    <!-- Firebase v9 Modules -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+        import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
+
+        const firebaseConfig = {
+            databaseURL: "https://rifafadadodente-default-rtdb.firebaseio.com/"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+    </script>
+</head>
+<body>
+    <h1>Rifa Formatura Joanderson - Cesta Fada do Dente</h1>
+    <p>Escolha um número e envie o pagamento via Pix.</p>
+    <div class="grid" id="numbers"></div>
+    
+    <div id="paymentSection" class="hidden">
+        <h2>Pagamento via Pix</h2>
+        <p>Chave Pix: <strong>89981386434</strong></p>
+        <button onclick="copyPixKey()">Copiar Chave Pix</button>
+        <p>Após o pagamento, envie o comprovante:</p>
+        <a id="sendReceipt" href="#" target="_blank">Enviar Comprovante</a>
+    </div>
+
+    <script type="module">
+        let soldNumbers = [];
+        const numbersContainer = document.getElementById('numbers');
+        const paymentSection = document.getElementById('paymentSection');
+        const sendReceipt = document.getElementById('sendReceipt');
+        const pixKey = "89981386434";
+
+        async function loadNumbers() {
+            const soldNumbersRef = ref(db, 'soldNumbers');
+            const snapshot = await get(soldNumbersRef);
+            soldNumbers = snapshot.val() || [];
+            numbersContainer.innerHTML = '';
+            for (let i = 1; i <= 150; i++) {
+                let btn = document.createElement('div');
+                btn.textContent = i;
+                btn.classList.add('number');
+                if (soldNumbers.includes(i)) {
+                    btn.classList.add('sold');
+                } else {
+                    btn.onclick = () => selectNumber(i);
+                }
+                numbersContainer.appendChild(btn);
+            }
+        }
+
+        function selectNumber(num) {
+            if (soldNumbers.includes(num)) {
+                alert("Esse número já foi comprado!");
+                return;
+            }
+            alert(`Você escolheu o número ${num}. Agora faça o pagamento via Pix e envie o comprovante.`);
+            sendReceipt.href = `https://wa.me/5586999853656?text=Comprovante+do+Pix+para+o+número+${num}`;
+            paymentSection.classList.remove('hidden');
+            soldNumbers.push(num);
+            const soldNumbersRef = ref(db, 'soldNumbers');
+            set(soldNumbersRef, soldNumbers);
+            loadNumbers();
+        }
+
+        function copyPixKey() {
+            navigator.clipboard.writeText(pixKey);
+            alert("Chave Pix copiada!");
+        }
+
+        loadNumbers();
+    </script>
+</body>
+</html>
