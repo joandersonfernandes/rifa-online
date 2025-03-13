@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rifa Online</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 10px; max-width: 600px; margin: auto; }
+        .number { padding: 10px; border: 1px solid #000; cursor: pointer; background: #eee; }
+        .sold { background: red; color: white; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <h1>Rifa Online</h1>
+    <p>Escolha um número e envie o pagamento via Pix.</p>
+    <div class="grid" id="numbers"></div>
+    <script>
+        let soldNumbers = [];
+        const numbersContainer = document.getElementById('numbers');
+
+        function loadNumbers() {
+            numbersContainer.innerHTML = '';
+            for (let i = 1; i <= 150; i++) {
+                let btn = document.createElement('div');
+                btn.textContent = i;
+                btn.classList.add('number');
+                if (soldNumbers.includes(i)) {
+                    btn.classList.add('sold');
+                } else {
+                    btn.onclick = () => selectNumber(i);
+                }
+                numbersContainer.appendChild(btn);
+            }
+        }
+
+        function selectNumber(num) {
+            let pixKey = "SUA_CHAVE_PIX_AQUI";
+            let message = `Envie o pagamento para ${pixKey} e informe o número ${num}.`;
+            alert(message);
+            soldNumbers.push(num);
+            loadNumbers();
+        }
+
+        loadNumbers();
+    </script>
+</body>
+</html>
